@@ -7,7 +7,7 @@ This file is only the checklist. What to build for each task is in `docs/tasks/p
 ## Phase 0: Foundation
 - [x] 0.1 Scaffold Next.js + TypeScript + Tailwind, init Convex, dev server runs — App Router scaffolded; Convex dependency and folder added (linking remains the required manual step).
 - [x] 0.2 Folder structure, ESLint, Prettier, `.env.example` — Added component and config folders, formatting scripts, and the Convex environment template.
-- [ ] 0.3 Landing page: header, hero, footer
+- [x] 0.3 Landing page: header, hero, footer — Added a responsive header, hero and footer with task-specified links and CTAs.
 - [ ] 0.4 Landing page: how-it-works, placeholder creator cards, creator and brand CTAs
 - [ ] 0.5 Deploy frontend to Netlify and backend to Convex cloud
 
