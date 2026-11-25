@@ -1,6 +1,28 @@
-import { convexAuthNextjsProxy } from "@/lib/convexAuth";
+import {
+  convexAuthNextjsProxy,
+  isAuthenticatedNextjs,
+  nextjsProxyRedirect,
+} from "@/lib/convexAuth";
 
-export default convexAuthNextjsProxy(async () => {});
+const protectedPaths = ["/dashboard", "/onboarding", "/brand", "/creator", "/admin"];
+const authPaths = ["/signin", "/signup"];
+
+function matchesPath(pathname: string, path: string) {
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
+export default convexAuthNextjsProxy(async (request) => {
+  const isAuthenticated = await isAuthenticatedNextjs();
+  const pathname = request.nextUrl.pathname;
+
+  if (!isAuthenticated && protectedPaths.some((path) => matchesPath(pathname, path))) {
+    return nextjsProxyRedirect(request, "/signin");
+  }
+
+  if (isAuthenticated && authPaths.includes(pathname)) {
+    return nextjsProxyRedirect(request, "/dashboard");
+  }
+});
 
 export const config = {
   matcher: ["/((?!auth(?:/|$)|_next/static|_next/image|favicon.ico).*)"],
