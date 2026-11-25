@@ -15,7 +15,7 @@ export function Header() {
             Creators
           </a>
         </nav>
-        <a className="text-sm font-semibold text-stone-950 underline underline-offset-4" href="#">
+        <a className="text-sm font-semibold text-stone-950 underline underline-offset-4" href="/signin">
           Sign in
         </a>
       </div>

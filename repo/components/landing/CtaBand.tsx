@@ -7,10 +7,10 @@ export function CtaBand() {
           <p className="mt-4 text-lg leading-8 text-emerald-50">Bring your next product story to life with the right creator.</p>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row lg:shrink-0">
-          <a className="flex min-h-11 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-100" href="#">
+          <a className="flex min-h-11 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-emerald-950 transition-colors hover:bg-emerald-100" href="/signup">
             I&apos;m a brand
           </a>
-          <a className="flex min-h-11 items-center justify-center rounded-full border border-emerald-200 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700" href="#">
+          <a className="flex min-h-11 items-center justify-center rounded-full border border-emerald-200 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700" href="/signup">
             I&apos;m a creator
           </a>
         </div>

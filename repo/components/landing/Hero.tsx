@@ -12,10 +12,10 @@ export function Hero() {
           Brands pay safely for creator-made content, and creators get paid for work they are proud to make.
         </p>
         <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-          <a className="flex min-h-11 items-center justify-center rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-stone-700" href="#">
+          <a className="flex min-h-11 items-center justify-center rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-stone-700" href="/signup">
             I&apos;m a brand
           </a>
-          <a className="flex min-h-11 items-center justify-center rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-950 transition-colors hover:border-stone-950" href="#">
+          <a className="flex min-h-11 items-center justify-center rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-950 transition-colors hover:border-stone-950" href="/signup">
             I&apos;m a creator
           </a>
         </div>
