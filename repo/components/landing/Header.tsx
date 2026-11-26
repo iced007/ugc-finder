@@ -1,4 +1,4 @@
-const APP_NAME = "APP_NAME";
+import { APP_NAME } from "@/lib/config";
 
 export function Header() {
   return (

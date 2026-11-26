@@ -1,3 +1,4 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
@@ -19,11 +20,21 @@ const socialAccountValidator = v.object({
   avgViews: v.number(),
 });
 
-/** The signed-in creator's own profile, or null if not saved yet. */
+/** The signed-in creator's own profile, or null if not saved or not a creator. */
 export const getMine = query({
   args: {},
   handler: async (ctx) => {
-    const user = await requireRole(ctx, ["creator"]);
+    const userId = await getAuthUserId<"users">(ctx);
+
+    if (userId === null) {
+      return null;
+    }
+
+    const user = await ctx.db.get("users", userId);
+
+    if (user?.role !== "creator") {
+      return null;
+    }
 
     return await ctx.db
       .query("creatorProfiles")

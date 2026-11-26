@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 import { api } from "@/convex/_generated/api";
@@ -45,10 +46,19 @@ function initialErrors(): FormErrors {
 type SavedProfile = NonNullable<FunctionReturnType<typeof api.creatorProfiles.getMine>>;
 
 export function CreatorProfileForm() {
+  const me = useQuery(api.users.me);
   const profile = useQuery(api.creatorProfiles.getMine);
 
-  if (profile === undefined) {
+  if (me === undefined || profile === undefined) {
     return <p className="text-sm text-stone-600">Loading your profile…</p>;
+  }
+
+  if (me?.role !== "creator") {
+    return (
+      <Link className="text-sm font-semibold text-stone-950 underline underline-offset-4" href="/signin">
+        Sign in as a creator
+      </Link>
+    );
   }
 
   return <ProfileFormFields profile={profile} />;

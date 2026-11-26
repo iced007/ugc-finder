@@ -7,6 +7,8 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { api } from "@/convex/_generated/api";
 import { convexAuthNextjsAccessToken } from "@/lib/convexAuth";
 
+export const instant = false;
+
 export default async function CreatorPage() {
   const accessToken = await convexAuthNextjsAccessToken();
   const token = accessToken ?? undefined;

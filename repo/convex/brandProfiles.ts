@@ -1,14 +1,25 @@
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
 import { requireRole } from "./lib/roles";
 import { CATEGORIES, assertHttpsUrl } from "./lib/validation";
 
-/** The signed-in brand's own profile, or null if not saved yet. */
+/** The signed-in brand's own profile, or null if not saved or not a brand. */
 export const getMine = query({
   args: {},
   handler: async (ctx) => {
-    const user = await requireRole(ctx, ["brand"]);
+    const userId = await getAuthUserId<"users">(ctx);
+
+    if (userId === null) {
+      return null;
+    }
+
+    const user = await ctx.db.get("users", userId);
+
+    if (user?.role !== "brand") {
+      return null;
+    }
 
     return await ctx.db
       .query("brandProfiles")

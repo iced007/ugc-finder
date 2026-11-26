@@ -1,6 +1,5 @@
 import {
   convexAuthNextjsProxy,
-  isAuthenticatedNextjs,
   nextjsProxyRedirect,
 } from "@/lib/convexAuth";
 
@@ -11,8 +10,8 @@ function matchesPath(pathname: string, path: string) {
   return pathname === path || pathname.startsWith(`${path}/`);
 }
 
-export default convexAuthNextjsProxy(async (request) => {
-  const isAuthenticated = await isAuthenticatedNextjs();
+export default convexAuthNextjsProxy(async (request, ctx) => {
+  const isAuthenticated = await ctx.isAuthenticated();
   const pathname = request.nextUrl.pathname;
 
   if (!isAuthenticated && protectedPaths.some((path) => matchesPath(pathname, path))) {

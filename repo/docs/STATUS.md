@@ -22,6 +22,15 @@ This file is only the checklist. What to build for each task is in `docs/tasks/p
 - [x] 1.4 Creator profile form (bio, categories, price, social accounts) — Added creatorProfiles table, role-checked getMine/upsertMine, Zod schema and a saved/reloadable form; run `npx convex dev` to push the schema.
 - [x] 1.5 Brand profile form — Added brandProfiles table, role-checked getMine/upsertMine, Zod schema and a saved/reloadable form; run `npx convex dev` to push the schema.
 
+## Bug fixes 01
+
+- [x] B.1 Proxy checks auth through its own context — The proxy now uses `ctx.isAuthenticated()` for its redirects.
+- [x] B.2 Role choice never sticks on "Saving…" — After saving, a dashboard link stays visible; failures are logged.
+- [x] B.3 Profile queries return null instead of throwing — Both `getMine` return null without the right role; forms show a sign-in link.
+- [x] B.4 Sign out recovers from failure and drops signed-in UI — Failures show a message and re-enable the button; success refreshes the router.
+- [ ] B.5 Root layout has a prerenderable shell — Fallback added, but the instant-UI error at app/layout.tsx:29 remains on /signin; stopped per spec.
+- [x] B.6 Show the real app name — Header, footer and page title use `APP_NAME` from `lib/config.ts`.
+
 ## Phase 2: Creator directory and samples
 
 - [ ] 2.1 Private R2 bucket, presigned upload action, signed playback action with role and status checks

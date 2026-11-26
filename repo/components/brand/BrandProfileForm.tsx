@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 import { api } from "@/convex/_generated/api";
@@ -15,10 +16,19 @@ const inputClass =
   "mt-2 min-h-11 w-full rounded-xl border border-stone-300 px-3 text-sm outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100";
 
 export function BrandProfileForm() {
+  const me = useQuery(api.users.me);
   const profile = useQuery(api.brandProfiles.getMine);
 
-  if (profile === undefined) {
+  if (me === undefined || profile === undefined) {
     return <p className="text-sm text-stone-600">Loading your profile…</p>;
+  }
+
+  if (me?.role !== "brand") {
+    return (
+      <Link className="text-sm font-semibold text-stone-950 underline underline-offset-4" href="/signin">
+        Sign in as a brand
+      </Link>
+    );
   }
 
   return <BrandProfileFields profile={profile} />;
