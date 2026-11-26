@@ -40,4 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-CODEX-WORKFLOW.md
+
+#folders
+docs/v2/
