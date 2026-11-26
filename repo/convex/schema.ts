@@ -22,7 +22,9 @@ export default defineSchema({
       }),
     ),
     approvedByAdmin: v.boolean(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_approved", ["approvedByAdmin"]),
   brandProfiles: defineTable({
     userId: v.id("users"),
     businessName: v.string(),

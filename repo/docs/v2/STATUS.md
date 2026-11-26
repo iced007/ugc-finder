@@ -4,7 +4,7 @@ The checklist. Tick a task and add a one-line note at the end of every task (eac
 
 What to build for each task is in `docs/v2/tasks/phase-N.md`. A task with no spec there must not be started.
 
-**Current focus:** Phase 2, next is 2.5. Upload, playback and deletion were tested by hand. Not yet confirmed: playback access for other viewers and 403 after URL expiry (2.3); in-browser size and length limits, brand redirect and 360px layout (2.4).
+**Current focus:** Phase 2, next is 2.6. Upload, playback and deletion were tested by hand. Not yet confirmed: playback access for other viewers and 403 after URL expiry (2.3); in-browser size and length limits, brand redirect and 360px layout (2.4); admin review list in the browser, approve and unapprove, and creator/brand rejection (2.5).
 **Open issues:** B.5 and the items in [known-issues.md](known-issues.md). Check the issues list before a task that touches the same files.
 
 Specs for finished phases stay in the old folder as history: `docs/tasks/phase-0.md`, `docs/tasks/phase-1.md`, `docs/tasks/phase-bugs-01.md`.
@@ -43,7 +43,7 @@ Specs for finished phases stay in the old folder as history: `docs/tasks/phase-0
 - [x] 2.2 Sample upload backend — sampleVideos table, presigned upload, confirm and delete with ownership checks
 - [x] 2.3 Signed playback for samples — role-checked short-lived URLs and a SignedVideo player
 - [x] 2.4 Sample upload UI — uploader with progress and limits, sample list with playback and delete
-- [ ] 2.5 Admin creator approval
+- [x] 2.5 Admin creator approval — admin review list with samples, approve and unapprove
 - [ ] 2.6 Public creator profile page
 - [ ] 2.7 Creator directory with filters and search
 
