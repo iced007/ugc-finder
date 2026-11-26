@@ -48,6 +48,11 @@ Agents: if your task touches a file named here, read that issue first. Do not fi
 - **Code:** the root `AGENTS.md` (the file agents load) still says Next.js 14+ and points to `docs/*.md`. The fixed version is `docs/v2/AGENTS.md`; agent tooling blocked writing the root file directly.
 - **Do:** Copy `docs/v2/AGENTS.md` over the root `AGENTS.md` before the next agent session, then delete `docs/v2/AGENTS.md` so there is only one copy.
 
+### K.16 Unfinished sample uploads are never cleaned up (from 2.2)
+
+- **Code:** a `sampleVideos` row stays `pending` if the upload or `confirmUpload` never happens. It counts toward `MAX_SAMPLES_PER_CREATOR` until the creator deletes it. An upload URL also stays valid for `UPLOAD_URL_TTL_SECONDS`, so a PUT after `deleteSample` leaves an object with no row, and a PUT of the same type and size can replace a `ready` sample.
+- **Do:** Needs a task: a scheduled cleanup of old `pending` rows and their objects, plus a way to remove objects with no row.
+
 ## Docs fixed in v2
 
 | ID | From task | Old docs said | Code does | Fixed in |

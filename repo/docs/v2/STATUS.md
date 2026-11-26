@@ -39,8 +39,8 @@ Specs for finished phases stay in the old folder as history: `docs/tasks/phase-0
 
 ## Phase 2: Creator directory and samples
 
-- [ ] 2.1 R2 bucket, config module and signing helper
-- [ ] 2.2 Sample upload backend
+- [x] 2.1 R2 bucket, config module and signing helper — aws4fetch signer, convex/lib/config.ts, R2 env vars documented
+- [x] 2.2 Sample upload backend — sampleVideos table, presigned upload, confirm and delete with ownership checks
 - [ ] 2.3 Signed playback for samples
 - [ ] 2.4 Sample upload UI
 - [ ] 2.5 Admin creator approval

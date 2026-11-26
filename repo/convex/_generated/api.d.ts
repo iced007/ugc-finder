@@ -11,8 +11,13 @@
 import type * as auth from "../auth.js";
 import type * as brandProfiles from "../brandProfiles.js";
 import type * as creatorProfiles from "../creatorProfiles.js";
+import type * as lib_config from "../lib/config.js";
+import type * as lib_r2 from "../lib/r2.js";
 import type * as lib_roles from "../lib/roles.js";
 import type * as lib_validation from "../lib/validation.js";
+import type * as r2Check from "../r2Check.js";
+import type * as sampleActions from "../sampleActions.js";
+import type * as samples from "../samples.js";
 import type * as users from "../users.js";
 
 import type {
@@ -25,8 +30,13 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   brandProfiles: typeof brandProfiles;
   creatorProfiles: typeof creatorProfiles;
+  "lib/config": typeof lib_config;
+  "lib/r2": typeof lib_r2;
   "lib/roles": typeof lib_roles;
   "lib/validation": typeof lib_validation;
+  r2Check: typeof r2Check;
+  sampleActions: typeof sampleActions;
+  samples: typeof samples;
   users: typeof users;
 }>;
 

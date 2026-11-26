@@ -29,4 +29,13 @@ export default defineSchema({
     facebookPageUrl: v.string(),
     category: v.string(),
   }).index("by_user", ["userId"]),
+  sampleVideos: defineTable({
+    creatorId: v.id("users"),
+    key: v.string(),
+    contentType: v.string(),
+    sizeBytes: v.number(),
+    durationSeconds: v.number(),
+    status: v.union(v.literal("pending"), v.literal("ready")),
+    createdAt: v.number(),
+  }).index("by_creator", ["creatorId"]),
 });
