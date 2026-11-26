@@ -23,4 +23,10 @@ export default defineSchema({
     ),
     approvedByAdmin: v.boolean(),
   }).index("by_user", ["userId"]),
+  brandProfiles: defineTable({
+    userId: v.id("users"),
+    businessName: v.string(),
+    facebookPageUrl: v.string(),
+    category: v.string(),
+  }).index("by_user", ["userId"]),
 });

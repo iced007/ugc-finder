@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as brandProfiles from "../brandProfiles.js";
 import type * as creatorProfiles from "../creatorProfiles.js";
 import type * as lib_roles from "../lib/roles.js";
 import type * as lib_validation from "../lib/validation.js";
@@ -22,6 +23,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  brandProfiles: typeof brandProfiles;
   creatorProfiles: typeof creatorProfiles;
   "lib/roles": typeof lib_roles;
   "lib/validation": typeof lib_validation;

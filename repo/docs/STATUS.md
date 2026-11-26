@@ -20,7 +20,7 @@ This file is only the checklist. What to build for each task is in `docs/tasks/p
 - [x] 1.2 Role chosen at signup, stored on user, role helper for Convex functions — Added one-time creator/brand onboarding and authenticated Convex role helpers.
 - [ ] 1.3 Route protection and role-based dashboards — Added auth-aware route redirects and role-specific dashboard pages.
 - [x] 1.4 Creator profile form (bio, categories, price, social accounts) — Added creatorProfiles table, role-checked getMine/upsertMine, Zod schema and a saved/reloadable form; run `npx convex dev` to push the schema.
-- [ ] 1.5 Brand profile form
+- [x] 1.5 Brand profile form — Added brandProfiles table, role-checked getMine/upsertMine, Zod schema and a saved/reloadable form; run `npx convex dev` to push the schema.
 
 ## Phase 2: Creator directory and samples
 
