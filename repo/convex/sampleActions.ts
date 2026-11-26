@@ -5,11 +5,12 @@ import type { Id } from "./_generated/dataModel";
 import { action } from "./_generated/server";
 import {
   MAX_SAMPLES_PER_CREATOR,
+  PLAYBACK_URL_TTL_SECONDS,
   SAMPLE_CONTENT_TYPES,
   SAMPLE_MAX_BYTES,
   SAMPLE_MAX_SECONDS,
 } from "./lib/config";
-import { deleteObject, headObject, presignPut } from "./lib/r2";
+import { deleteObject, headObject, presignGet, presignPut } from "./lib/r2";
 
 type SampleContentType = (typeof SAMPLE_CONTENT_TYPES)[number];
 
@@ -106,5 +107,34 @@ export const deleteSample = action({
     await deleteObject(sample.key);
     await ctx.runMutation(internal.samples.remove, { sampleId });
     return null;
+  },
+});
+
+/**
+ * A short-lived URL to stream a sample. The owner and admins get any status;
+ * everyone else, signed in or not, only `ready` samples of approved creators.
+ */
+export const getPlaybackUrl = action({
+  args: { sampleId: v.id("sampleVideos") },
+  handler: async (
+    ctx,
+    { sampleId },
+  ): Promise<{ url: string; expiresAt: number }> => {
+    const found = await ctx.runQuery(internal.samples.getForPlayback, {
+      sampleId,
+    });
+    const allowed =
+      found !== null &&
+      (found.viewer?.role === "admin" ||
+        found.viewer?.userId === found.sample.creatorId ||
+        (found.sample.status === "ready" && found.approvedByAdmin));
+
+    if (!allowed) {
+      throw new ConvexError("This video is not available.");
+    }
+
+    // Taken before signing, so it is never later than the real expiry.
+    const expiresAt = Date.now() + PLAYBACK_URL_TTL_SECONDS * 1000;
+    return { url: await presignGet(found.sample.key), expiresAt };
   },
 });

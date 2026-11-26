@@ -4,7 +4,7 @@ The checklist. Tick a task and add a one-line note at the end of every task (eac
 
 What to build for each task is in `docs/v2/tasks/phase-N.md`. A task with no spec there must not be started.
 
-**Current focus:** Phase 2, starting with 2.1 (needs the R2 manual steps first). Before that, copy `docs/v2/AGENTS.md` over the root `AGENTS.md` (K.15).
+**Current focus:** Phase 2, next is 2.5. Upload, playback and deletion were tested by hand. Not yet confirmed: playback access for other viewers and 403 after URL expiry (2.3); in-browser size and length limits, brand redirect and 360px layout (2.4).
 **Open issues:** B.5 and the items in [known-issues.md](known-issues.md). Check the issues list before a task that touches the same files.
 
 Specs for finished phases stay in the old folder as history: `docs/tasks/phase-0.md`, `docs/tasks/phase-1.md`, `docs/tasks/phase-bugs-01.md`.
@@ -41,8 +41,8 @@ Specs for finished phases stay in the old folder as history: `docs/tasks/phase-0
 
 - [x] 2.1 R2 bucket, config module and signing helper — aws4fetch signer, convex/lib/config.ts, R2 env vars documented
 - [x] 2.2 Sample upload backend — sampleVideos table, presigned upload, confirm and delete with ownership checks
-- [ ] 2.3 Signed playback for samples
-- [ ] 2.4 Sample upload UI
+- [x] 2.3 Signed playback for samples — role-checked short-lived URLs and a SignedVideo player
+- [x] 2.4 Sample upload UI — uploader with progress and limits, sample list with playback and delete
 - [ ] 2.5 Admin creator approval
 - [ ] 2.6 Public creator profile page
 - [ ] 2.7 Creator directory with filters and search

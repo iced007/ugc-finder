@@ -74,6 +74,34 @@ export const getOwned = internalQuery({
   handler: async (ctx, { sampleId }) => requireOwnSample(ctx, sampleId),
 });
 
+/**
+ * A sample, its creator's approval and the caller (null if signed out), or null
+ * if the sample is gone. No role check here: `getPlaybackUrl` decides access.
+ */
+export const getForPlayback = internalQuery({
+  args: { sampleId: v.id("sampleVideos") },
+  handler: async (ctx, { sampleId }) => {
+    const sample = await ctx.db.get("sampleVideos", sampleId);
+
+    if (sample === null) {
+      return null;
+    }
+
+    const profile = await ctx.db
+      .query("creatorProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", sample.creatorId))
+      .unique();
+    const userId = await getAuthUserId<"users">(ctx);
+    const user = userId === null ? null : await ctx.db.get("users", userId);
+
+    return {
+      sample,
+      approvedByAdmin: profile?.approvedByAdmin === true,
+      viewer: user === null ? null : { userId: user._id, role: user.role },
+    };
+  },
+});
+
 export const insertPending = internalMutation({
   args: {
     key: v.string(),

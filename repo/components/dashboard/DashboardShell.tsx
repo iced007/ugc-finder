@@ -19,6 +19,7 @@ export function DashboardShell({ role, children }: DashboardShellProps) {
   const links = [
     { href: `/${role}`, label: "Dashboard" },
     { href: `/${role}/profile`, label: "Profile" },
+    ...(role === "creator" ? [{ href: "/creator/samples", label: "Samples" }] : []),
   ];
 
   return (
