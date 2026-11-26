@@ -18,7 +18,7 @@ This file is only the checklist. What to build for each task is in `docs/tasks/p
 - [x] 1.1b Auth wiring in Next.js — Added SSR auth handlers, provider, and non-redirecting session-refresh proxy.
 - [x] 1.1c Sign up, sign in, sign out pages — Added responsive username/password auth pages, readable auth errors, sign-out control, and landing-page links.
 - [x] 1.2 Role chosen at signup, stored on user, role helper for Convex functions — Added one-time creator/brand onboarding and authenticated Convex role helpers.
-- [ ] 1.3 Route protection and role-based dashboards — Added auth-aware route redirects and role-specific dashboard pages.
+- [x] 1.3 Route protection and role-based dashboards — Added auth-aware route redirects and role-specific dashboard pages.
 - [x] 1.4 Creator profile form (bio, categories, price, social accounts) — Added creatorProfiles table, role-checked getMine/upsertMine, Zod schema and a saved/reloadable form; run `npx convex dev` to push the schema.
 - [x] 1.5 Brand profile form — Added brandProfiles table, role-checked getMine/upsertMine, Zod schema and a saved/reloadable form; run `npx convex dev` to push the schema.
 

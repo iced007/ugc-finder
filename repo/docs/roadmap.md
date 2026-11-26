@@ -7,7 +7,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 0: Foundation (S)
+
 **Goal:** project runs locally and deploys.
+
 - Create the Next.js + TypeScript + Tailwind project.
 - Connect Convex, set up Convex Auth.
 - Deploy the empty app to Netlify with the Convex backend.
@@ -19,7 +21,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 1: Accounts and roles (M)
+
 **Goal:** people can sign up as a creator or a brand.
+
 - Sign up, sign in, sign out.
 - Choose a role at signup (`creator` or `brand`); `admin` assigned manually.
 - Role-based route protection and role checks inside every Convex function.
@@ -31,7 +35,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 2: Creator directory and samples (L)
+
 **Goal:** brands can browse creators and watch real sample videos.
+
 - Set up a private Cloudflare R2 bucket with presigned uploads through a Convex action. No public URLs; all playback goes through short-lived signed URLs created after role and order-status checks.
 - Creator sample upload with progress bar, size and format limits.
 - Creator public profile page with samples.
@@ -43,7 +49,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 3: Briefs and orders (M)
+
 **Goal:** a brand can start an order with a creator.
+
 - Brief form with fields for product, goal, tone, requirements, reference links, and deadline.
 - Product type on every brief: `none`, `reimbursed`, `keep` or `return_required`, with a declared value for shipped items.
 - Creator accept window (48 hours by default) and a delivery deadline.
@@ -57,7 +65,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 4: Simulated escrow and order state machine (M)
+
 **Goal:** the money flow works, without real money.
+
 - Order state machine in Convex: every transition validated by current state and caller role. It includes the shipping states, the post states (`draft_submitted`, `draft_approved`, `posted`, `live_period`, `completed`, `removed_early`), the `expired`, `disputed` and `refunded` states, and timers (accept window, delivery deadline, live period end, auto-refund).
 - Shipment tracking: the brand adds courier and tracking number, the creator confirms receipt, and the delivery deadline starts at receipt.
 - Ledger table with `hold`, `release`, `fee` and `refund` entries.
@@ -71,7 +81,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 5: Draft, posting, proof, payout (L)
+
 **Goal:** the full order loop closes.
+
 - Creator uploads the draft video for an order. In a `deliver_to_brand` order the same upload is the final delivery.
 - Brand views the preview through a signed URL and can approve the draft, request changes with written feedback, or open a dispute. In `deliver_to_brand` orders the original is released only after approval.
 - Revision loop with a version history of deliveries, limited to a free number of rounds (2 by default).
@@ -87,7 +99,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 6: Admin dashboard (M)
+
 **Goal:** the person running the platform can see and control everything.
+
 - List and filter all orders, users and creators.
 - Approve or reject creators.
 - View the ledger and totals (volume, fees earned).
@@ -99,7 +113,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 7: Polish and demo-readiness (M)
+
 **Goal:** it looks and feels like a real product.
+
 - Seed script that fills the app with realistic demo data and sample videos.
 - Mobile-friendly pass on every page, since many users will be on phones.
 - Loading, empty and error states.
@@ -120,7 +136,9 @@ Effort is relative: S = a few days, M = about a week, L = one to two weeks.
 ---
 
 ## Phase 8 (optional): Real-world validation
+
 Only if you want to see whether it could become a real business.
+
 - Run a landing page test with a small Facebook ad budget to measure cost per lead.
 - Handle 3 to 5 real orders by hand and note what breaks.
 - Check the legal side (Digital Commerce Operation Guidelines 2021) before touching real money.
@@ -130,12 +148,14 @@ Only if you want to see whether it could become a real business.
 ---
 
 ## Order of work if time runs short
+
 1. Phases 0 to 2 give a creator marketplace with a directory.
 2. Phases 3 to 5 make it a real transaction flow, and this is the core of the portfolio piece.
 3. Phase 6 shows the operator side.
 4. Phase 7 makes it presentable.
 
 ## Risks to watch
+
 - **Video upload and playback** is the most likely place to lose time. Build and test it early, in Phase 2.
 - **State machine bugs** around payments. Write tests before wiring up the UI.
 - **Scope creep.** Ad management, scripts and content calendars are out of scope.

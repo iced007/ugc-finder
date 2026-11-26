@@ -201,3 +201,36 @@ Acceptance:
 - Usable at 360px; npm run typecheck and lint pass.
 
 Out of scope: logo upload, verifying the Facebook page, any page showing brands to creators.
+
+1.6 Dashboard styling for creators and brands
+
+Goal: the creator and brand dashboards share one clean, mobile-first look and show the state of the work from 1.3 to 1.5 (profile saved or not, key profile facts), so the app feels connected.
+
+Reads: app/creator/page.tsx, app/brand/page.tsx, app/creator/profile/page.tsx, app/brand/profile/page.tsx, components/auth/SignOutButton.tsx, lib/config.ts (APP_NAME), the creatorProfiles.getMine and brandProfiles.getMine return shapes.
+
+Build:
+
+- components/dashboard/DashboardShell.tsx: shared layout with a top bar (APP_NAME, the role label, SignOutButton), a nav row (Dashboard, Profile; the active link is highlighted), and a centered content area, max width about 960px, 16px side padding. The nav links collapse into a horizontal scroll row on small screens, never a hamburger.
+- components/dashboard/StatCard.tsx: a small card with a label, a value and an optional status badge (done, pending, empty). Used in a grid of one column at 360px, two from the sm breakpoint, three from lg.
+- components/dashboard/ProfileStatusCard.tsx: a prominent card. No profile saved yet: "Complete your profile" with a button to /{role}/profile. Saved: "Profile ready" with an Edit link.
+- app/creator/page.tsx: inside the shell, show ProfileStatusCard and stat cards for price per video (integer taka, formatted with thousands separators), number of linked social accounts, categories chosen, and review status (approvedByAdmin false is "Waiting for review", true is "Approved").
+- app/brand/page.tsx: inside the shell, show ProfileStatusCard and stat cards for business name, category and Facebook page link.
+- Add one "Orders" card on both dashboards with an empty state ("No orders yet"). It is a placeholder; orders arrive in Phase 3.
+- app/creator/profile/page.tsx and app/brand/profile/page.tsx: wrap the existing form in the shell. Do not change the forms.
+- Load profile data on the server with the same access-token pattern as 1.3 (queries only). Use Tailwind classes only: one accent color, neutral grays, rounded-lg cards, consistent spacing. No new theme file.
+
+Files: components/dashboard/DashboardShell.tsx, components/dashboard/StatCard.tsx, components/dashboard/ProfileStatusCard.tsx, app/creator/page.tsx, app/brand/page.tsx, app/creator/profile/page.tsx, app/brand/profile/page.tsx
+
+Data: reads creatorProfiles.getMine and brandProfiles.getMine from 1.4 and 1.5. No new tables, queries or mutations.
+
+Allowed new dependencies: none
+
+Acceptance:
+
+- New creator or brand with no profile sees "Complete your profile"; after saving the profile and returning to the dashboard it shows "Profile ready" and the saved values.
+- A creator's review status reads "Waiting for review" after saving.
+- Dashboard and profile pages share the same top bar and nav; the active link is highlighted.
+- No horizontal scroll at 360px; links and buttons at least 44px tall.
+- npm run typecheck and lint pass.
+
+Out of scope: the admin page, real order, earnings or chart data, avatar or logo upload, dark mode, animations, icon libraries, a hamburger menu, changing any Convex function.
