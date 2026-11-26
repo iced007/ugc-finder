@@ -1,15 +1,21 @@
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
 import { FormEvent, useState } from "react";
 
-const CATEGORIES = ["beauty", "food", "fashion", "gadgets", "baby"] as const;
-const PLATFORMS = ["facebook", "instagram", "tiktok", "youtube"] as const;
-const PRICE_MIN_TAKA = 500;
-const PRICE_MAX_TAKA = 100000;
-const MAX_SOCIAL_ACCOUNTS = 4;
+import { api } from "@/convex/_generated/api";
+import {
+  CATEGORIES,
+  MAX_SOCIAL_ACCOUNTS,
+  PLATFORMS,
+  PRICE_MAX_TAKA,
+  PRICE_MIN_TAKA,
+  type Category,
+  type Platform,
+} from "@/convex/lib/validation";
+import { creatorProfileSchema } from "@/lib/validation/creatorProfile";
 
-type Category = (typeof CATEGORIES)[number];
-type Platform = (typeof PLATFORMS)[number];
 type SocialAccount = { platform: Platform; pageUrl: string; followerCount: string; avgViews: string };
 type FormErrors = {
   displayName?: string;
@@ -27,60 +33,100 @@ const emptySocialAccount = (): SocialAccount => ({
   avgViews: "",
 });
 
-function isHttpsUrl(value: string) {
-  try {
-    return new URL(value).protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function isNonNegativeInteger(value: string) {
-  return /^\d+$/.test(value);
+// Empty or non-numeric text becomes NaN so Zod reports it; "12.5" stays 12.5 and fails the integer rule.
+function toNumber(value: string) {
+  return value.trim() === "" ? Number.NaN : Number(value);
 }
 
 function initialErrors(): FormErrors {
   return { socialFields: {} };
 }
 
+type SavedProfile = NonNullable<FunctionReturnType<typeof api.creatorProfiles.getMine>>;
+
 export function CreatorProfileForm() {
-  const [displayName, setDisplayName] = useState("");
-  const [bio, setBio] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [pricePerVideo, setPricePerVideo] = useState("");
-  const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([]);
-  const [errors, setErrors] = useState<FormErrors>(initialErrors);
-  const [saved, setSaved] = useState(false);
+  const profile = useQuery(api.creatorProfiles.getMine);
 
-  function validate() {
-    const nextErrors = initialErrors();
-    const numericPrice = Number(pricePerVideo);
-
-    if (displayName.trim().length < 2 || displayName.trim().length > 80) {
-      nextErrors.displayName = "Use a name between 2 and 80 characters.";
-    }
-    if (!bio.trim()) nextErrors.bio = "Add a short bio.";
-    if (categories.length === 0) nextErrors.categories = "Choose at least one category.";
-    if (!Number.isInteger(numericPrice) || numericPrice < PRICE_MIN_TAKA || numericPrice > PRICE_MAX_TAKA) {
-      nextErrors.pricePerVideo = `Enter an integer from ${PRICE_MIN_TAKA.toLocaleString()} to ${PRICE_MAX_TAKA.toLocaleString()} taka.`;
-    }
-
-    socialAccounts.forEach((account, index) => {
-      const fieldErrors: string[] = [];
-      if (!isHttpsUrl(account.pageUrl.trim())) fieldErrors.push("Use an HTTPS page URL.");
-      if (!isNonNegativeInteger(account.followerCount)) fieldErrors.push("Followers must be a non-negative integer.");
-      if (!isNonNegativeInteger(account.avgViews)) fieldErrors.push("Average views must be a non-negative integer.");
-      if (fieldErrors.length) nextErrors.socialFields[index] = fieldErrors.join(" ");
-    });
-    if (Object.keys(nextErrors.socialFields).length) nextErrors.socialAccounts = "Fix the social account details below.";
-
-    setErrors(nextErrors);
-    return !nextErrors.displayName && !nextErrors.bio && !nextErrors.categories && !nextErrors.pricePerVideo && !nextErrors.socialAccounts;
+  if (profile === undefined) {
+    return <p className="text-sm text-stone-600">Loading your profile…</p>;
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  return <ProfileFormFields profile={profile} />;
+}
+
+function ProfileFormFields({ profile }: { profile: SavedProfile | null }) {
+  const upsertMine = useMutation(api.creatorProfiles.upsertMine);
+
+  const [displayName, setDisplayName] = useState(profile?.displayName ?? "");
+  const [bio, setBio] = useState(profile?.bio ?? "");
+  const [categories, setCategories] = useState<Category[]>((profile?.categories ?? []) as Category[]);
+  const [pricePerVideo, setPricePerVideo] = useState(profile ? String(profile.pricePerVideo) : "");
+  const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>(
+    (profile?.socialAccounts ?? []).map((account) => ({
+      platform: account.platform as Platform,
+      pageUrl: account.pageUrl,
+      followerCount: String(account.followerCount),
+      avgViews: String(account.avgViews),
+    })),
+  );
+  const [errors, setErrors] = useState<FormErrors>(initialErrors);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  function parse() {
+    const result = creatorProfileSchema.safeParse({
+      displayName,
+      bio,
+      categories,
+      pricePerVideo: toNumber(pricePerVideo),
+      socialAccounts: socialAccounts.map((account) => ({
+        platform: account.platform,
+        pageUrl: account.pageUrl,
+        followerCount: toNumber(account.followerCount),
+        avgViews: toNumber(account.avgViews),
+      })),
+    });
+    const nextErrors = initialErrors();
+
+    if (result.success) {
+      setErrors(nextErrors);
+      return result.data;
+    }
+
+    for (const issue of result.error.issues) {
+      const [field, index, sub] = issue.path;
+      if (field === "socialAccounts" && typeof index === "number") {
+        const label = sub === "pageUrl" ? "Page URL" : sub === "followerCount" ? "Followers" : sub === "avgViews" ? "Average views" : "Platform";
+        const previous = nextErrors.socialFields[index];
+        nextErrors.socialFields[index] = `${previous ? `${previous} ` : ""}${label}: ${issue.message}`;
+      } else if (field === "socialAccounts") {
+        nextErrors.socialAccounts = issue.message;
+      } else if (field === "displayName" || field === "bio" || field === "categories" || field === "pricePerVideo") {
+        nextErrors[field] ??= issue.message;
+      }
+    }
+    if (Object.keys(nextErrors.socialFields).length) nextErrors.socialAccounts ??= "Fix the social account details below.";
+    setErrors(nextErrors);
+    return null;
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSaved(validate());
+    setSaved(false);
+    setServerError(null);
+    const data = parse();
+    if (!data) return;
+
+    setSaving(true);
+    try {
+      await upsertMine(data);
+      setSaved(true);
+    } catch (error) {
+      setServerError(error instanceof Error ? error.message : "Could not save your profile.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -114,7 +160,7 @@ export function CreatorProfileForm() {
           </fieldset>
           <label className="block">
             <span className="text-sm font-semibold text-stone-800">Price per video (taka)</span>
-            <input className="mt-2 min-h-11 w-full rounded-xl border border-stone-300 px-3 text-sm outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" inputMode="numeric" min={PRICE_MIN_TAKA} onChange={(event) => setPricePerVideo(event.target.value)} type="number" value={pricePerVideo} />
+            <input className="mt-2 min-h-11 w-full rounded-xl border border-stone-300 px-3 text-sm outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" inputMode="numeric" max={PRICE_MAX_TAKA} min={PRICE_MIN_TAKA} step={1} onChange={(event) => setPricePerVideo(event.target.value)} type="number" value={pricePerVideo} />
             {errors.pricePerVideo && <span className="mt-1 block text-sm text-red-700">{errors.pricePerVideo}</span>}
           </label>
         </div>
@@ -164,7 +210,8 @@ export function CreatorProfileForm() {
       </section>
 
       <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-        <button className="min-h-11 w-full rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white sm:w-auto" type="submit">Save profile</button>
+        <button className="min-h-11 w-full rounded-full bg-stone-950 px-6 py-3 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto" disabled={saving} type="submit">{saving ? "Saving…" : "Save profile"}</button>
+        {serverError && <p className="text-sm text-red-700">{serverError}</p>}
         {saved && <p className="text-sm font-medium text-emerald-700">Profile saved successfully.</p>}
       </div>
     </form>

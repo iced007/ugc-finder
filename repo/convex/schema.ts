@@ -7,4 +7,20 @@ export default defineSchema({
       v.union(v.literal("creator"), v.literal("brand"), v.literal("admin")),
     ),
   }),
+  creatorProfiles: defineTable({
+    userId: v.id("users"),
+    displayName: v.string(),
+    bio: v.string(),
+    categories: v.array(v.string()),
+    pricePerVideo: v.number(),
+    socialAccounts: v.array(
+      v.object({
+        platform: v.string(),
+        pageUrl: v.string(),
+        followerCount: v.number(),
+        avgViews: v.number(),
+      }),
+    ),
+    approvedByAdmin: v.boolean(),
+  }).index("by_user", ["userId"]),
 });

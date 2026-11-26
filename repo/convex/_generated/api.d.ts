@@ -9,7 +9,9 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as creatorProfiles from "../creatorProfiles.js";
 import type * as lib_roles from "../lib/roles.js";
+import type * as lib_validation from "../lib/validation.js";
 import type * as users from "../users.js";
 
 import type {
@@ -20,7 +22,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  creatorProfiles: typeof creatorProfiles;
   "lib/roles": typeof lib_roles;
+  "lib/validation": typeof lib_validation;
   users: typeof users;
 }>;
 
