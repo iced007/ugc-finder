@@ -41,11 +41,6 @@ Agents: if your task touches a file named here, read that issue first. Do not fi
 - **Code:** `app/creators/[profileId]/page.tsx` sets `export const instant = false`, so the page may block on its per-request query. Before this, dev reported uncached data at the `await connection()` in `getCreator`. `getPublic` results are not cached.
 - **Do:** Nothing.
 
-### K.18 Landing header does not work well on other pages (from 2.6)
-
-- **Code:** `components/landing/Header.tsx` is reused by `app/creators/[profileId]/page.tsx`. Its "How it works" and "Creators" links point to `#how-it-works` and `#creators`, and the app name links to `#`, so none of them leads back to the landing page's content. Its links are 20px to 28px high at 360px, under the 44px minimum.
-- **Do:** Needs a task: point the links at the landing page and make each tap target at least 44px.
-
 ## Docs fixed in v2
 
 | ID | From task | Old docs said | Code does | Fixed in |

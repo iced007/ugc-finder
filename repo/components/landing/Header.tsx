@@ -1,21 +1,25 @@
+import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
 
 export function Header() {
   return (
     <header className="border-b border-stone-200 bg-stone-50">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-5 py-4 sm:px-8">
-        <a className="mr-auto text-lg font-bold tracking-tight" href="#">
+        <Link className="mr-auto inline-flex min-h-11 items-center px-2 text-lg font-bold tracking-tight" href="/">
           {APP_NAME}
-        </a>
+        </Link>
         <nav aria-label="Main navigation" className="flex items-center gap-5 text-sm font-medium text-stone-600">
-          <a className="transition-colors hover:text-stone-950" href="#how-it-works">
+          <Link className="inline-flex min-h-11 items-center px-2 transition-colors hover:text-stone-950" href="/#how-it-works">
             How it works
-          </a>
-          <a className="transition-colors hover:text-stone-950" href="#creators">
+          </Link>
+          <Link className="inline-flex min-h-11 items-center px-2 transition-colors hover:text-stone-950" href="/#creators">
             Creators
-          </a>
+          </Link>
         </nav>
-        <a className="text-sm font-semibold text-stone-950 underline underline-offset-4" href="/signin">
+        <a
+          className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-stone-950 underline underline-offset-4"
+          href="/signin"
+        >
           Sign in
         </a>
       </div>
