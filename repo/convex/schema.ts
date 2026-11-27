@@ -42,6 +42,17 @@ export default defineSchema({
     sizeBytes: v.number(),
     durationSeconds: v.number(),
     status: v.union(v.literal("pending"), v.literal("ready")),
+    // Missing means approved: samples uploaded before reviews stay public.
+    reviewStatus: v.optional(
+      v.union(
+        v.literal("pending"),
+        v.literal("approved"),
+        v.literal("declined"),
+      ),
+    ),
     createdAt: v.number(),
-  }).index("by_creator", ["creatorId"]),
+  })
+    .index("by_creator", ["creatorId"])
+    .index("by_status_and_createdAt", ["status", "createdAt"])
+    .index("by_review", ["reviewStatus", "status"]),
 });

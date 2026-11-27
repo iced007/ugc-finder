@@ -1,20 +1,36 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { ConvexError, v } from "convex/values";
 
-import type { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
+import type { Doc, Id } from "./_generated/dataModel";
 import {
   internalMutation,
   internalQuery,
   query,
   type QueryCtx,
 } from "./_generated/server";
-import { MAX_SAMPLES_PER_CREATOR } from "./lib/config";
+import {
+  MAX_SAMPLES_PER_CREATOR,
+  SAMPLE_CLEANUP_BATCH_SIZE,
+  SAMPLE_PENDING_MAX_AGE_SECONDS,
+  UPLOAD_URL_TTL_SECONDS,
+} from "./lib/config";
 import { requireRole } from "./lib/roles";
 
 function samplesOf(ctx: QueryCtx, creatorId: Id<"users">) {
   return ctx.db
     .query("sampleVideos")
     .withIndex("by_creator", (q) => q.eq("creatorId", creatorId));
+}
+
+/** Whether people other than the owner and admins may see this sample. */
+export function isPublicSample(
+  sample: Pick<Doc<"sampleVideos">, "status" | "reviewStatus">,
+) {
+  return (
+    sample.status === "ready" &&
+    (sample.reviewStatus ?? "approved") === "approved"
+  );
 }
 
 /** Throws unless the caller is the creator who owns this sample. */
@@ -54,6 +70,7 @@ export const listMine = query({
       sizeBytes: sample.sizeBytes,
       durationSeconds: sample.durationSeconds,
       status: sample.status,
+      reviewStatus: sample.reviewStatus ?? "approved",
       createdAt: sample.createdAt,
     }));
   },
@@ -125,6 +142,7 @@ export const insertPending = internalMutation({
       ...args,
       creatorId: user._id,
       status: "pending",
+      reviewStatus: "pending",
       createdAt: Date.now(),
     });
   },
@@ -141,7 +159,41 @@ export const markReady = internalMutation({
 export const remove = internalMutation({
   args: { sampleId: v.id("sampleVideos") },
   handler: async (ctx, { sampleId }) => {
-    await requireOwnSample(ctx, sampleId);
+    const sample = await requireOwnSample(ctx, sampleId);
     await ctx.db.delete("sampleVideos", sampleId);
+
+    // The URL was signed before the row was created, so it has expired by then.
+    // A PUT made with it after this delete is removed by the second delete.
+    const uploadExpiresAt = sample.createdAt + UPLOAD_URL_TTL_SECONDS * 1000;
+    if (uploadExpiresAt > Date.now()) {
+      await ctx.scheduler.runAt(
+        uploadExpiresAt,
+        internal.sampleActions.deleteStoredObject,
+        { key: sample.key },
+      );
+    }
+  },
+});
+
+/** Cron: drops uploads that never finished, then deletes their objects. */
+export const removeStalePending = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - SAMPLE_PENDING_MAX_AGE_SECONDS * 1000;
+    const stale = await ctx.db
+      .query("sampleVideos")
+      .withIndex("by_status_and_createdAt", (q) =>
+        q.eq("status", "pending").lt("createdAt", cutoff),
+      )
+      .take(SAMPLE_CLEANUP_BATCH_SIZE);
+
+    for (const sample of stale) {
+      await ctx.db.delete("sampleVideos", sample._id);
+      await ctx.scheduler.runAfter(
+        0,
+        internal.sampleActions.deleteStoredObject,
+        { key: sample.key },
+      );
+    }
   },
 });

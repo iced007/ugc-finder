@@ -24,7 +24,11 @@ function connect(key: string) {
   return { client, url };
 }
 
-/** The upload must send exactly this content type and size, or R2 rejects it. */
+/**
+ * The upload must send exactly this content type and size, plus
+ * `If-None-Match: *`, or R2 rejects it. That header makes the URL work once: R2
+ * answers 412 if the key already exists.
+ */
 export async function presignPut(
   key: string,
   contentType: string,
@@ -37,8 +41,10 @@ export async function presignPut(
     headers: {
       "Content-Type": contentType,
       "Content-Length": String(sizeBytes),
+      "If-None-Match": "*",
     },
-    // allHeaders: aws4fetch leaves these two headers unsigned by default.
+    // allHeaders: aws4fetch leaves Content-Type and Content-Length unsigned by
+    // default.
     aws: { signQuery: true, allHeaders: true },
   });
   return signed.url;

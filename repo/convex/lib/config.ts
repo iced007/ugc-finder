@@ -13,5 +13,10 @@ export const MAX_SAMPLES_PER_CREATOR = 6;
 export const UPLOAD_URL_TTL_SECONDS = 600;
 export const PLAYBACK_URL_TTL_SECONDS = 300;
 
+// Must be more than UPLOAD_URL_TTL_SECONDS, or a live upload could be removed.
+export const SAMPLE_PENDING_MAX_AGE_SECONDS = 3600;
+export const SAMPLE_CLEANUP_INTERVAL_MINUTES = 60;
+export const SAMPLE_CLEANUP_BATCH_SIZE = 50;
+
 export const DIRECTORY_PAGE_SIZE = 12;
 export const DIRECTORY_SCAN_LIMIT = 500;

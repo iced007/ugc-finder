@@ -15,6 +15,27 @@ type Sample = NonNullable<
   FunctionReturnType<typeof api.samples.listMine>
 >[number];
 
+const REVIEW_BADGES = {
+  pending: {
+    label: "Waiting for review",
+    className: "bg-amber-100 text-amber-800",
+  },
+  approved: { label: "Approved", className: "bg-green-100 text-green-800" },
+  declined: { label: "Declined", className: "bg-red-100 text-red-800" },
+} as const;
+
+export function ReviewBadge({ status }: { status: Sample["reviewStatus"] }) {
+  const { label, className } = REVIEW_BADGES[status];
+
+  return (
+    <span
+      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${className}`}
+    >
+      {label}
+    </span>
+  );
+}
+
 function SampleCard({ sample }: { sample: Sample }) {
   const deleteSample = useAction(api.sampleActions.deleteSample);
   const [confirming, setConfirming] = useState(false);
@@ -52,6 +73,9 @@ function SampleCard({ sample }: { sample: Sample }) {
             Processing
           </span>
         )}
+      </div>
+      <div className="mt-2">
+        <ReviewBadge status={sample.reviewStatus} />
       </div>
       {confirming ? (
         <div className="mt-3">
@@ -117,9 +141,12 @@ export function SampleList() {
 
   return (
     <div className="mt-6 space-y-6">
-      <p className="text-sm text-stone-600">
-        {samples.length} of {MAX_SAMPLES_PER_CREATOR} samples
-      </p>
+      <div className="space-y-1 text-sm text-stone-600">
+        <p>
+          {samples.length} of {MAX_SAMPLES_PER_CREATOR} samples
+        </p>
+        <p>Only approved samples are shown to brands.</p>
+      </div>
       <SampleUploader atLimit={samples.length >= MAX_SAMPLES_PER_CREATOR} />
       {samples.length === 0 ? (
         <p className="rounded-2xl bg-white p-4 text-sm text-stone-600">

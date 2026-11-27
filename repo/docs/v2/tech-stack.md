@@ -61,6 +61,8 @@ Every business number lives in one place, never inline.
 | `SAMPLE_CONTENT_TYPES` | `video/mp4`, `video/quicktime` | Phase 2 |
 | `MAX_SAMPLES_PER_CREATOR` | 6 | Phase 2 |
 | `UPLOAD_URL_TTL_SECONDS` / `PLAYBACK_URL_TTL_SECONDS` | 600 / 300 | Phase 2 |
+| `SAMPLE_PENDING_MAX_AGE_SECONDS` | 3600 (more than `UPLOAD_URL_TTL_SECONDS`) | Phase 2 |
+| `SAMPLE_CLEANUP_INTERVAL_MINUTES` / `SAMPLE_CLEANUP_BATCH_SIZE` | 60 / 50 | Phase 2 |
 | `DIRECTORY_PAGE_SIZE` / `DIRECTORY_SCAN_LIMIT` | 12 / 500 | Phase 2 |
 | `acceptWindowHours` | 48 | Phase 4 |
 | `autoApproveDays` | 7 (reminders on days 3 and 6) | Phase 5 |
@@ -80,7 +82,7 @@ All IDs are Convex IDs. Money fields are integer taka. Timestamps are millisecon
 | `users` | `role?` (`creator`, `brand`, `admin`) | | built. Username + Password gives no name, email or avatar |
 | `creatorProfiles` | `userId`, `displayName`, `bio`, `categories[]`, `pricePerVideo`, `socialAccounts[]` (`platform`, `pageUrl`, `followerCount`, `avgViews`), `approvedByAdmin` | `by_user` | built. Phase 2 adds `by_approved` and a search index on `displayName` |
 | `brandProfiles` | `userId`, `businessName`, `facebookPageUrl`, `category` | `by_user` | built |
-| `sampleVideos` | `creatorId` (users), `key`, `contentType`, `sizeBytes`, `durationSeconds`, `status` (`pending`, `ready`), `createdAt` | `by_creator` | planned, Phase 2 |
+| `sampleVideos` | `creatorId` (users), `key`, `contentType`, `sizeBytes`, `durationSeconds`, `status` (`pending`, `ready`), `reviewStatus?` (`pending`, `approved`, `declined`; missing means approved), `createdAt` | `by_creator`, `by_status_and_createdAt`, `by_review` | planned, Phase 2 |
 | `briefs` | `brandId`, `title`, `product`, `goals`, `tone`, `requirements`, `referenceLinks[]`, `deadline`, `templateId?`, `productType` (`none`, `reimbursed`, `keep`, `return_required`), `declaredValue?` | `by_brand` | planned, Phase 3 |
 | `orders` | `briefId`, `brandId`, `creatorId`, `orderType`, `price`, `platformFee`, `status`, `acceptDeadline?`, `deliveryDeadline?`, `autoApproveAt?`, `revisionsUsed` | `by_brand`, `by_creator`, `by_status` | planned, Phase 3 |
 | `shipments` | `orderId`, `courier`, `trackingNumber`, `shippedAt`, `receivedAt?` | `by_order` | planned, Phase 4 |
@@ -103,6 +105,8 @@ A schema change not shown here needs approval first.
 - The bucket is private. There are no public URLs, ever.
 - Keys: `samples/<userId>/<uuid>.<ext>` and `orders/<orderId>/<deliveryId>/{original,preview}.<ext>`.
 - Limits come from `convex/lib/config.ts`. The client checks type, size and duration before asking for an upload URL; the server checks again. Duration is reported by the browser and is not verified on the server.
+- Upload URLs work once: the PUT is signed with `If-None-Match: *` (which the bucket's CORS rule must allow), so R2 answers 412 if the key already exists.
+- Cleanup: a cron removes `pending` rows older than `SAMPLE_PENDING_MAX_AGE_SECONDS` with their objects; deleting a sample while its upload URL is still valid deletes the object again after the URL expires.
 - R2 credentials live in Convex env vars only: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`.
 
 ### Signed URLs
@@ -118,7 +122,7 @@ Samples:
 | --- | --- |
 | The creator who owns them | Always, including `pending` |
 | Admin | Always |
-| Anyone else, signed in or not | Stream only, `ready` samples of creators with `approvedByAdmin` true |
+| Anyone else, signed in or not | Stream only, `ready` samples with `reviewStatus` `approved` or missing, of creators with `approvedByAdmin` true |
 
 Order videos (brand view; creators can always access their own uploads, admins can access everything for disputes):
 

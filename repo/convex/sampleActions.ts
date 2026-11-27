@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import {
   MAX_SAMPLES_PER_CREATOR,
   PLAYBACK_URL_TTL_SECONDS,
@@ -11,6 +11,7 @@ import {
   SAMPLE_MAX_SECONDS,
 } from "./lib/config";
 import { deleteObject, headObject, presignGet, presignPut } from "./lib/r2";
+import { isPublicSample } from "./samples";
 
 type SampleContentType = (typeof SAMPLE_CONTENT_TYPES)[number];
 
@@ -110,9 +111,19 @@ export const deleteSample = action({
   },
 });
 
+/** Scheduled by the sample mutations for an object whose row is gone. */
+export const deleteStoredObject = internalAction({
+  args: { key: v.string() },
+  handler: async (_ctx, { key }): Promise<null> => {
+    await deleteObject(key);
+    return null;
+  },
+});
+
 /**
  * A short-lived URL to stream a sample. The owner and admins get any status;
- * everyone else, signed in or not, only `ready` samples of approved creators.
+ * everyone else, signed in or not, only public samples (see `isPublicSample`)
+ * of approved creators.
  */
 export const getPlaybackUrl = action({
   args: { sampleId: v.id("sampleVideos") },
@@ -127,7 +138,7 @@ export const getPlaybackUrl = action({
       found !== null &&
       (found.viewer?.role === "admin" ||
         found.viewer?.userId === found.sample.creatorId ||
-        (found.sample.status === "ready" && found.approvedByAdmin));
+        (isPublicSample(found.sample) && found.approvedByAdmin));
 
     if (!allowed) {
       throw new ConvexError("This video is not available.");

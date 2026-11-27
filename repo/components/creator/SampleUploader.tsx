@@ -64,13 +64,19 @@ function putFile(
       }
     };
     request.onload = () => {
-      if (request.status >= 200 && request.status < 300) resolve();
+      // 412: the file is already there, so let confirmUpload check it.
+      const uploaded =
+        (request.status >= 200 && request.status < 300) ||
+        request.status === 412;
+      if (uploaded) resolve();
       else fail();
     };
     request.onerror = fail;
     request.onabort = fail;
     request.open("PUT", uploadUrl);
     request.setRequestHeader("Content-Type", file.type);
+    // Signed into the URL, which therefore cannot overwrite an existing file.
+    request.setRequestHeader("If-None-Match", "*");
     request.send(file);
   });
 }

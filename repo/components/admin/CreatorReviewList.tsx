@@ -6,17 +6,100 @@ import type { FunctionReturnType } from "convex/server";
 import Link from "next/link";
 import { useState } from "react";
 
+import { ReviewBadge } from "@/components/creator/SampleList";
 import { SignedVideo } from "@/components/video/SignedVideo";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 type Creator = NonNullable<
   FunctionReturnType<typeof api.admin.listCreators>
 >[number];
 
 const TABS = [
-  { label: "Waiting", approved: false },
-  { label: "Approved", approved: true },
+  { id: "waiting", label: "Waiting" },
+  { id: "approved", label: "Approved" },
+  { id: "samples", label: "New samples" },
 ] as const;
+
+type Decision = "approved" | "declined";
+
+function ReviewButtons({
+  sampleId,
+  decisions,
+}: {
+  sampleId: Id<"sampleVideos">;
+  decisions: Decision[];
+}) {
+  const setSampleReview = useMutation(api.admin.setSampleReview);
+  const [saving, setSaving] = useState<Decision | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleClick(decision: Decision) {
+    setError(null);
+    setSaving(decision);
+
+    try {
+      await setSampleReview({ sampleId, decision });
+    } catch (error) {
+      console.error(error);
+      setError(
+        error instanceof ConvexError
+          ? String(error.data)
+          : "We could not review this sample. Please try again.",
+      );
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  return (
+    <div className="mt-2">
+      <div className="flex flex-wrap gap-2">
+        {decisions.map((decision) => (
+          <button
+            key={decision}
+            className={`min-h-11 flex-1 rounded-full px-4 text-sm font-semibold disabled:opacity-50 ${
+              decision === "approved"
+                ? "bg-stone-900 text-white"
+                : "border border-stone-300 text-red-700"
+            }`}
+            disabled={saving !== null}
+            onClick={() => handleClick(decision)}
+            type="button"
+          >
+            {decision === "approved"
+              ? saving === decision
+                ? "Approving…"
+                : "Approve"
+              : saving === decision
+                ? "Declining…"
+                : "Decline"}
+          </button>
+        ))}
+      </div>
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function SignInPrompt() {
+  return (
+    <p className="mt-4 text-sm text-stone-600">
+      Please{" "}
+      <Link
+        className="inline-flex min-h-11 items-center font-semibold underline"
+        href="/signin"
+      >
+        sign in
+      </Link>{" "}
+      as an admin to review creators.
+    </p>
+  );
+}
 
 function CreatorCard({
   creator,
@@ -79,16 +162,32 @@ function CreatorCard({
         </ul>
       )}
 
-      {creator.sampleIds.length === 0 ? (
+      {creator.samples.length === 0 ? (
         <p className="mt-3 text-sm text-stone-600">No samples yet.</p>
       ) : (
         <ul className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-          {creator.sampleIds.map((sampleId) => (
-            <li key={sampleId}>
-              <SignedVideo sampleId={sampleId} />
+          {creator.samples.map((sample) => (
+            <li key={sample._id}>
+              <SignedVideo sampleId={sample._id} />
+              {approved && (
+                <div className="mt-2">
+                  <ReviewBadge status={sample.reviewStatus} />
+                  <ReviewButtons
+                    decisions={(["approved", "declined"] as const).filter(
+                      (decision) => decision !== sample.reviewStatus,
+                    )}
+                    sampleId={sample._id}
+                  />
+                </div>
+              )}
             </li>
           ))}
         </ul>
+      )}
+      {!approved && creator.samples.length > 0 && (
+        <p className="mt-3 text-sm text-stone-600">
+          Approving this creator also approves these samples
+        </p>
       )}
 
       <button
@@ -126,18 +225,7 @@ function Creators({ approved }: { approved: boolean }) {
   }
 
   if (creators === null) {
-    return (
-      <p className="mt-4 text-sm text-stone-600">
-        Please{" "}
-        <Link
-          className="inline-flex min-h-11 items-center font-semibold underline"
-          href="/signin"
-        >
-          sign in
-        </Link>{" "}
-        as an admin to review creators.
-      </p>
-    );
+    return <SignInPrompt />;
   }
 
   if (creators.length === 0) {
@@ -157,29 +245,78 @@ function Creators({ approved }: { approved: boolean }) {
   );
 }
 
+function NewSamples() {
+  const samples = useQuery(api.admin.listSamplesForReview);
+
+  if (samples === undefined) {
+    return <p className="mt-4 text-sm text-stone-600">Loading samples…</p>;
+  }
+
+  if (samples === null) {
+    return <SignInPrompt />;
+  }
+
+  if (samples.length === 0) {
+    return (
+      <p className="mt-4 rounded-2xl bg-white p-4 text-sm text-stone-600">
+        No samples waiting for review
+      </p>
+    );
+  }
+
+  return (
+    <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {samples.map((sample) => (
+        <li
+          key={sample._id}
+          className="min-w-0 rounded-2xl border border-stone-200 bg-white p-3 shadow-sm"
+        >
+          <SignedVideo sampleId={sample._id} />
+          <Link
+            className="mt-1 flex min-h-11 items-center font-semibold break-all underline"
+            href={`/creators/${sample.profileId}`}
+          >
+            {sample.displayName}
+          </Link>
+          <ReviewButtons
+            decisions={["approved", "declined"]}
+            sampleId={sample._id}
+          />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function CreatorReviewList() {
-  const [approved, setApproved] = useState(false);
+  const [activeTab, setActiveTab] =
+    useState<(typeof TABS)[number]["id"]>("waiting");
 
   return (
     <section className="mt-6">
       <div className="flex gap-2">
         {TABS.map((tab) => (
           <button
-            key={tab.label}
-            aria-pressed={approved === tab.approved}
-            className={`min-h-11 flex-1 rounded-full px-6 text-sm font-semibold sm:flex-none ${
-              approved === tab.approved
+            key={tab.id}
+            aria-pressed={activeTab === tab.id}
+            className={`min-h-11 flex-1 rounded-full px-3 text-sm font-semibold sm:flex-none sm:px-6 ${
+              activeTab === tab.id
                 ? "bg-stone-900 text-white"
                 : "border border-stone-300"
             }`}
-            onClick={() => setApproved(tab.approved)}
+            onClick={() => setActiveTab(tab.id)}
             type="button"
           >
             {tab.label}
           </button>
         ))}
       </div>
-      <Creators approved={approved} />
+      {activeTab === "samples" ? (
+        <NewSamples />
+      ) : (
+        // Keyed so that cards do not carry state from one tab to the other.
+        <Creators key={activeTab} approved={activeTab === "approved"} />
+      )}
     </section>
   );
 }

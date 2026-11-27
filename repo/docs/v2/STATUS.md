@@ -4,7 +4,7 @@ The checklist. Tick a task and add a one-line note at the end of every task (eac
 
 What to build for each task is in `docs/v2/tasks/phase-N.md`. A task with no spec there must not be started.
 
-**Current focus:** Bug fixes 02, next is B.8. Not yet confirmed for B.7: saving a creator profile with price 499 shows the minimum-price error. Not yet confirmed for 2.6: sample playback on a public profile (the only approved creator has no ready samples) and the 404 page for a real unapproved creator (only a malformed ID was tried). Upload, playback and deletion were tested by hand. Not yet confirmed: playback access for other viewers and 403 after URL expiry (2.3); in-browser size and length limits, brand redirect and 360px layout (2.4); admin review list in the browser, approve and unapprove, and creator/brand rejection (2.5). Not yet confirmed for 2.7: the checks with three approved creators (only two exist), platform and follower filters keeping a matching creator, and unapproved creators staying hidden.
+**Current focus:** next is B.12 in Bug fixes 02. Not yet confirmed for 2.9 (in the browser): a new upload showing "Waiting for review" and appearing under "New samples"; approve removing it from the tab, playing on the public page and showing "Approved"; decline showing "Declined" and staying off the public page; 360px with no horizontal scroll and 44px tap targets. All 2.8 Acceptance items passed. Not yet confirmed for B.11: a replayed PUT getting 412 with the first file still playing, and the 360px layout. A new upload reaching `ready` was checked by hand. Not yet confirmed for B.10: the cron showing in the Convex dashboard, a run deleting a stale pending row and its R2 object, and the scheduled second delete after deleting a new sample. Not yet confirmed for B.7: saving a creator profile with price 499 shows the minimum-price error. Not yet confirmed for 2.6: sample playback on a public profile (the only approved creator has no ready samples) and the 404 page for a real unapproved creator (only a malformed ID was tried). Upload, playback and deletion were tested by hand. Not yet confirmed: playback access for other viewers and 403 after URL expiry (2.3); in-browser size and length limits, brand redirect and 360px layout (2.4); admin review list in the browser, approve and unapprove, and creator/brand rejection (2.5). Not yet confirmed for 2.7: the checks with three approved creators (only two exist), platform and follower filters keeping a matching creator, and unapproved creators staying hidden.
 **Queued for Phase 2:** 2.8 and 2.9 (separate sample approval). They edit convex/samples.ts and convex/sampleActions.ts, the same files as B.10 and B.11, so do them after those fixes.
 **Open issues:** B.5 and the items in [known-issues.md](known-issues.md). Check the issues list before a task that touches the same files.
 
@@ -42,8 +42,8 @@ Specs for finished phases stay in the old folder as history: `docs/tasks/phase-0
 
 - [x] B.7 Limits in one config module — price and social-account limits moved to convex/lib/config.ts
 - [ ] B.8 Root layout passes instant-UI validation
-- [ ] B.10 Clean up stale pending samples and late uploads
-- [ ] B.11 An upload URL cannot replace a sample
+- [x] B.10 Sample cleanup — cron removes stale pending samples; deletes re-run after the upload URL expires
+- [x] B.11 One-time upload URLs — PUT signed with If-None-Match, 412 treated as already uploaded
 - [ ] B.12 Public creator page metadata error
 - [ ] B.13 Landing header works on every page
 
@@ -56,8 +56,8 @@ Specs for finished phases stay in the old folder as history: `docs/tasks/phase-0
 - [x] 2.5 Admin creator approval — admin review list with samples, approve and unapprove
 - [x] 2.6 Public creator profile page — approved-only public query and /creators/[profileId]
 - [x] 2.7 Creator directory — /creators with URL-based filters, search and load more
-- [ ] 2.8 Sample review backend
-- [ ] 2.9 Sample review UI
+- [x] 2.8 Sample review backend — reviewStatus on samples, admin approve/decline, public queries show approved samples only
+- [x] 2.9 Sample review UI — admin "New samples" tab with approve/decline, review badges on the creator's sample list
 
 ## Phase 3: Briefs and orders
 

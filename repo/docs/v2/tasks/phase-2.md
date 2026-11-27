@@ -206,7 +206,7 @@ Do the tasks in order, one per session.
 - `convex/samples.ts`: `insertPending` sets `reviewStatus: "pending"`. Export `isPublicSample(sample)`: `status === "ready"` and `(reviewStatus ?? "approved") === "approved"`. `listMine` returns `reviewStatus`, with a missing value shown as `approved`.
 - `convex/sampleActions.ts` `getPlaybackUrl`: anyone other than the owner or an admin needs `isPublicSample` and an approved creator. This replaces the "ready + approved creator" rule from 2.3.
 - `convex/creators.ts` `getPublic`: filter samples with `isPublicSample`. This replaces the `ready` filter from 2.6.
-- `convex/admin.ts`: `listCreators` returns `samples: { _id, reviewStatus }[]` (ready only) in place of `sampleIds`. New query `listSamplesForReview` (null unless admin) returns ready, `pending` samples of approved creators with the creator's `displayName` and profile ID. New mutation `setSampleReview({ sampleId, decision })`, where the decision is `approved` or `declined`, guarded by `requireRole(ctx, ["admin"])`. `setCreatorApproval` with `approved: true` also sets that creator's `pending` samples to `approved`. Unapproving leaves samples as they are.
+- `convex/admin.ts`: `listCreators` also returns `samples: { _id, reviewStatus }[]` (ready only). Keep `sampleIds` unchanged so components/admin/CreatorReviewList.tsx still compiles; 2.9 removes it. New query `listSamplesForReview` (null unless admin) returns ready, `pending` samples of approved creators with the creator's `displayName` and profile ID. New mutation `setSampleReview({ sampleId, decision })`, where the decision is `approved` or `declined`, guarded by `requireRole(ctx, ["admin"])`. `setCreatorApproval` with `approved: true` also sets that creator's `pending` samples to `approved`. Unapproving leaves samples as they are.
 
 **Files:** convex/schema.ts, convex/samples.ts, convex/sampleActions.ts, convex/creators.ts, convex/admin.ts, convex/samples.test.ts, docs/v2/tech-stack.md (section 5 row, section 6 Samples table), docs/v2/STATUS.md
 **Data:** `sampleVideos.reviewStatus` (new, optional), new index `by_review`
@@ -232,10 +232,11 @@ Do the tasks in order, one per session.
 
 **Build:**
 - `components/admin/CreatorReviewList.tsx`: add a third tab, "New samples", fed by `listSamplesForReview`. Each card shows the video with `SignedVideo`, the creator's name linking to `/creators/<profileId>`, and Approve and Decline buttons with a pending state. Empty state: "No samples waiting for review".
+- Same file: read `creator.samples` in place of `creator.sampleIds`, then remove `sampleIds` from `listCreators` in `convex/admin.ts`.
 - Same file: "Waiting" creator cards note "Approving this creator also approves these samples". "Approved" creator cards show a review badge on each sample and an Approve or Decline button to change it.
 - `components/creator/SampleList.tsx`: a badge on each sample ("Waiting for review", "Approved", "Declined") and a one-line hint: "Only approved samples are shown to brands."
 
-**Files:** components/admin/CreatorReviewList.tsx, components/creator/SampleList.tsx, docs/v2/STATUS.md
+**Files:** components/admin/CreatorReviewList.tsx, components/creator/SampleList.tsx, convex/admin.ts (remove `sampleIds` only), docs/v2/STATUS.md
 **Data:** none (uses 2.8)
 **Config:** none
 **Allowed new dependencies:** none

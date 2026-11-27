@@ -11,8 +11,8 @@ Agents: if your task touches a file named here, read that issue first. Do not fi
 ### K.7 Root layout still fails instant-UI validation (B.5)
 
 - **Old docs:** nothing about `next.config.ts`.
-- **Code:** `cacheComponents: true` and `partialPrefetching: true` are on. B.5 added a Suspense fallback, but the error at `app/layout.tsx:29` remains on `/signin`.
-- **Do:** Needs a task. Investigate which request-time read on `/signin` sits outside a Suspense boundary. The config is now documented in tech-stack.md, section 1.
+- **Code:** `cacheComponents: true` and `partialPrefetching: true` are on. B.5 added a Suspense fallback, but dev still shows "Could not validate `instant`" on `/signin`. The cause is a "module factory is not available" failure for `@convex-dev/auth/dist/ssr/nextjs/client.js`, a client reference in the server component build. It stays after a fresh dev restart, and moving the Suspense boundary does not help. No request-time read outside Suspense was found. A Next.js or `@convex-dev/auth` fault is likely but not confirmed, and a production build has not been checked.
+- **Do:** Task B.8 in `docs/v2/tasks/bugfix-01.md`. The config is documented in tech-stack.md, section 1.
 
 ### K.10 Branch preview deploys unverified (from 0.5)
 
@@ -35,11 +35,6 @@ Agents: if your task touches a file named here, read that issue first. Do not fi
 
 - **Code:** the root `AGENTS.md` (the file agents load) still says Next.js 14+ and points to `docs/*.md`. The fixed version is `docs/v2/AGENTS.md`; agent tooling blocked writing the root file directly.
 - **Do:** Copy `docs/v2/AGENTS.md` over the root `AGENTS.md` before the next agent session, then delete `docs/v2/AGENTS.md` so there is only one copy.
-
-### K.16 Unfinished sample uploads are never cleaned up (from 2.2)
-
-- **Code:** a `sampleVideos` row stays `pending` if the upload or `confirmUpload` never happens. It counts toward `MAX_SAMPLES_PER_CREATOR` until the creator deletes it. An upload URL also stays valid for `UPLOAD_URL_TTL_SECONDS`, so a PUT after `deleteSample` leaves an object with no row, and a PUT of the same type and size can replace a `ready` sample.
-- **Do:** Needs a task: a scheduled cleanup of old `pending` rows and their objects, plus a way to remove objects with no row.
 
 ### K.17 Public creator page reports a blocking-metadata error in dev (from 2.6)
 

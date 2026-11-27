@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { query } from "./_generated/server";
 import { DIRECTORY_PAGE_SIZE, DIRECTORY_SCAN_LIMIT } from "./lib/config";
+import { isPublicSample } from "./samples";
 
 // Fields are listed one by one so new columns stay private by default.
 function publicFields(profile: Doc<"creatorProfiles">) {
@@ -21,7 +22,7 @@ function publicFields(profile: Doc<"creatorProfiles">) {
 }
 
 /**
- * Public: one approved creator's profile and ready sample IDs, or null if the
+ * Public: one approved creator's profile and public sample IDs, or null if the
  * ID is malformed, unknown or not approved. Never returns user IDs or keys.
  */
 export const getPublic = query({
@@ -47,7 +48,7 @@ export const getPublic = query({
     return {
       ...publicFields(profile),
       sampleIds: samples
-        .filter((sample) => sample.status === "ready")
+        .filter(isPublicSample)
         .map((sample) => sample._id),
     };
   },
