@@ -8,11 +8,11 @@ Agents: if your task touches a file named here, read that issue first. Do not fi
 
 ## Open
 
-### K.7 Root layout still fails instant-UI validation (B.5)
+### K.7 Next.js dev validation worker is turned off for a Convex Auth error (B.8)
 
 - **Old docs:** nothing about `next.config.ts`.
-- **Code:** `cacheComponents: true` and `partialPrefetching: true` are on. B.5 added a Suspense fallback, but dev still shows "Could not validate `instant`" on `/signin`. The cause is a "module factory is not available" failure for `@convex-dev/auth/dist/ssr/nextjs/client.js`, a client reference in the server component build. It stays after a fresh dev restart, and moving the Suspense boundary does not help. No request-time read outside Suspense was found. A Next.js or `@convex-dev/auth` fault is likely but not confirmed, and a production build has not been checked.
-- **Do:** Task B.8 in `docs/v2/tasks/bugfix-01.md`. The config is documented in tech-stack.md, section 1.
+- **Code:** `next.config.ts` sets `experimental.devValidationWorker: false`. With the worker on, `next dev` (Next.js 16.4.6, `@convex-dev/auth` 2.1.0) logged "Could not validate `instant`" on /, /signin and /signup: it could not load Convex Auth's dynamically imported client provider. The production build passed. Upstream: https://github.com/vercel/next.js/issues/98393 (open, fix in PR 98401).
+- **Do:** Once a released Next.js version includes the fix, upgrade, remove the setting and recheck those routes and /dashboard.
 
 ### K.10 Branch preview deploys unverified (from 0.5)
 
