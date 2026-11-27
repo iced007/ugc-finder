@@ -3,10 +3,6 @@
 export const CATEGORIES = ["beauty", "food", "fashion", "gadgets", "baby"] as const;
 export const PLATFORMS = ["facebook", "instagram", "tiktok", "youtube"] as const;
 
-export const PRICE_MIN_TAKA = 500;
-export const PRICE_MAX_TAKA = 100000;
-export const MAX_SOCIAL_ACCOUNTS = 4;
-
 export type Category = (typeof CATEGORIES)[number];
 export type Platform = (typeof PLATFORMS)[number];
 

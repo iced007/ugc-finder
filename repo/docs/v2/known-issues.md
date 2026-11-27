@@ -8,23 +8,11 @@ Agents: if your task touches a file named here, read that issue first. Do not fi
 
 ## Open
 
-### K.4 Limits are split across two files (from 1.4)
-
-- **Old docs:** timers and limits live in one config module.
-- **Code:** `PRICE_MIN_TAKA`, `PRICE_MAX_TAKA` and `MAX_SOCIAL_ACCOUNTS` are in `convex/lib/validation.ts`. There is no `convex/lib/config.ts` yet.
-- **Do:** Needs a task after 2.1 creates `convex/lib/config.ts`: move the three constants there and update the imports in `convex/creatorProfiles.ts`, `lib/validation/creatorProfile.ts` and `components/creator/CreatorProfileForm.tsx`. About 5 files.
-
 ### K.7 Root layout still fails instant-UI validation (B.5)
 
 - **Old docs:** nothing about `next.config.ts`.
 - **Code:** `cacheComponents: true` and `partialPrefetching: true` are on. B.5 added a Suspense fallback, but the error at `app/layout.tsx:29` remains on `/signin`.
 - **Do:** Needs a task. Investigate which request-time read on `/signin` sits outside a Suspense boundary. The config is now documented in tech-stack.md, section 1.
-
-### K.9 No test runner (from 0.2)
-
-- **Old docs:** "tests for the changed module" in the agent rules, and state machine tests in Phase 4.
-- **Code:** no test script and no test dependency.
-- **Do:** Needs a task (4.1). Adding `vitest` and `convex-test` needs approval first. Until then, agents run only typecheck and lint.
 
 ### K.10 Branch preview deploys unverified (from 0.5)
 
@@ -52,6 +40,16 @@ Agents: if your task touches a file named here, read that issue first. Do not fi
 
 - **Code:** a `sampleVideos` row stays `pending` if the upload or `confirmUpload` never happens. It counts toward `MAX_SAMPLES_PER_CREATOR` until the creator deletes it. An upload URL also stays valid for `UPLOAD_URL_TTL_SECONDS`, so a PUT after `deleteSample` leaves an object with no row, and a PUT of the same type and size can replace a `ready` sample.
 - **Do:** Needs a task: a scheduled cleanup of old `pending` rows and their objects, plus a way to remove objects with no row.
+
+### K.17 Public creator page reports a blocking-metadata error in dev (from 2.6)
+
+- **Code:** `app/creators/[profileId]/page.tsx` renders, but Next.js dev reports "uncached data in `generateMetadata()`", pointing at the `await connection()` in `getCreator`. Without that call, the Convex fetch raised a `Math.random()` prerender error. Adding a Suspense boundary and a dynamic marker component did not clear the metadata error. A production build was not run.
+- **Do:** Needs a task. Find how `generateMetadata` can read the creator under `cacheComponents` without caching a profile that may since have been unapproved. May be related to K.7.
+
+### K.18 Landing header does not work well on other pages (from 2.6)
+
+- **Code:** `components/landing/Header.tsx` is reused by `app/creators/[profileId]/page.tsx`. Its "How it works" and "Creators" links point to `#how-it-works` and `#creators`, and the app name links to `#`, so none of them leads back to the landing page's content. Its links are 20px to 28px high at 360px, under the 44px minimum.
+- **Do:** Needs a task: point the links at the landing page and make each tap target at least 44px.
 
 ## Docs fixed in v2
 

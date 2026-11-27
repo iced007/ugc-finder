@@ -38,7 +38,7 @@ Next.js 16 (App Router, `proxy.ts` not middleware), React 19, TypeScript strict,
 - Never print a whole file or a full diff in the terminal. Use `git diff --stat`, and end every command that can print many lines with `| tail -n 30`.
 - Edit files in place with small patches. Do not rewrite whole files or paste them back in replies.
 - No refactors, renames or "improvements" outside the task, even for issues in `known-issues.md`.
-- Checks: `npm run typecheck`, then `npm run lint` on the changed files. No test runner exists yet. No full builds unless asked.
+- Checks: `npm run typecheck`, then `npm run lint` on the changed files. Run `npm test` after a Convex change. No full builds unless asked.
 - If a task would touch more than 8 files or 300 changed lines, stop and propose a split before writing code.
 
 ## Scope of changes

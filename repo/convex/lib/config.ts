@@ -1,6 +1,10 @@
 // Limits, timers and money rules. Plain TypeScript so client code can import it.
 // See docs/v2/tech-stack.md section 4.
 
+export const PRICE_MIN_TAKA = 500;
+export const PRICE_MAX_TAKA = 100000;
+export const MAX_SOCIAL_ACCOUNTS = 4;
+
 export const SAMPLE_MAX_BYTES = 100 * 1024 * 1024;
 export const SAMPLE_MAX_SECONDS = 90;
 export const SAMPLE_CONTENT_TYPES = ["video/mp4", "video/quicktime"] as const;

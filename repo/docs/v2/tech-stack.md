@@ -15,6 +15,7 @@ Status markers: **built** = exists in the repo; **planned** = described here, no
 | Backend and DB | Convex | ^1.50.0 | Database, server functions, scheduled functions, realtime |
 | Auth | Convex Auth v2, Username + Password | ^2.1.0 | Docs: https://docs.convex.dev/auth/convex-auth (v2 only) |
 | Form validation | Zod | ^4.6.7 | Forms only; Convex functions use Convex validators |
+| Tests | Vitest + convex-test | ^4.1.12 / ^0.0.75 | `npm test`; `edge-runtime` environment (`@edge-runtime/vm`). Vitest 5 needs `@types/node` 22+ |
 | Video storage | Cloudflare R2 | planned (Phase 2) | Private bucket, presigned URLs via `aws4fetch` |
 | Hosting | Netlify (frontend), Convex cloud (backend) | | `netlify.toml` runs `npx convex deploy --cmd 'npm run build'` |
 
@@ -49,12 +50,12 @@ Every business number lives in one place, never inline.
 | --- | --- | --- |
 | `lib/config.ts` | `APP_NAME` (UI text only) | built |
 | `convex/lib/validation.ts` | `CATEGORIES`, `PLATFORMS`, `assertHttpsUrl`, `assertNonNegativeInt` | built |
-| `convex/lib/config.ts` | All limits, timers and money rules below | planned (created in task 2.1) |
+| `convex/lib/config.ts` | All limits, timers and money rules below | built |
 
 | Name | Value | Used from |
 | --- | --- | --- |
-| `PRICE_MIN_TAKA` / `PRICE_MAX_TAKA` | 500 / 100000 | Phase 1 (now in `validation.ts`, see known issue K.4) |
-| `MAX_SOCIAL_ACCOUNTS` | 4 | Phase 1 (now in `validation.ts`, see K.4) |
+| `PRICE_MIN_TAKA` / `PRICE_MAX_TAKA` | 500 / 100000 | Phase 1 |
+| `MAX_SOCIAL_ACCOUNTS` | 4 | Phase 1 |
 | `SAMPLE_MAX_BYTES` | 100 MB | Phase 2 |
 | `SAMPLE_MAX_SECONDS` | 90 | Phase 2 |
 | `SAMPLE_CONTENT_TYPES` | `video/mp4`, `video/quicktime` | Phase 2 |

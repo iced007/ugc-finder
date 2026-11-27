@@ -2,13 +2,15 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
+import {
+  MAX_SOCIAL_ACCOUNTS,
+  PRICE_MAX_TAKA,
+  PRICE_MIN_TAKA,
+} from "./lib/config";
 import { requireRole } from "./lib/roles";
 import {
   CATEGORIES,
-  MAX_SOCIAL_ACCOUNTS,
   PLATFORMS,
-  PRICE_MAX_TAKA,
-  PRICE_MIN_TAKA,
   assertHttpsUrl,
   assertNonNegativeInt,
 } from "./lib/validation";

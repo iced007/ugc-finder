@@ -24,7 +24,11 @@ export default defineSchema({
     approvedByAdmin: v.boolean(),
   })
     .index("by_user", ["userId"])
-    .index("by_approved", ["approvedByAdmin"]),
+    .index("by_approved", ["approvedByAdmin"])
+    .searchIndex("search_name", {
+      searchField: "displayName",
+      filterFields: ["approvedByAdmin"],
+    }),
   brandProfiles: defineTable({
     userId: v.id("users"),
     businessName: v.string(),

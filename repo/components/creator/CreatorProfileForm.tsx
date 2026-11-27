@@ -7,11 +7,13 @@ import { FormEvent, useState } from "react";
 
 import { api } from "@/convex/_generated/api";
 import {
-  CATEGORIES,
   MAX_SOCIAL_ACCOUNTS,
-  PLATFORMS,
   PRICE_MAX_TAKA,
   PRICE_MIN_TAKA,
+} from "@/convex/lib/config";
+import {
+  CATEGORIES,
+  PLATFORMS,
   type Category,
   type Platform,
 } from "@/convex/lib/validation";

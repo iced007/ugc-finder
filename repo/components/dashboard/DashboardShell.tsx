@@ -20,6 +20,7 @@ export function DashboardShell({ role, children }: DashboardShellProps) {
     { href: `/${role}`, label: "Dashboard" },
     { href: `/${role}/profile`, label: "Profile" },
     ...(role === "creator" ? [{ href: "/creator/samples", label: "Samples" }] : []),
+    ...(role === "brand" ? [{ href: "/creators", label: "Find creators" }] : []),
   ];
 
   return (

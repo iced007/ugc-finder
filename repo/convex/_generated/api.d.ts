@@ -12,6 +12,7 @@ import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as brandProfiles from "../brandProfiles.js";
 import type * as creatorProfiles from "../creatorProfiles.js";
+import type * as creators from "../creators.js";
 import type * as lib_config from "../lib/config.js";
 import type * as lib_r2 from "../lib/r2.js";
 import type * as lib_roles from "../lib/roles.js";
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   brandProfiles: typeof brandProfiles;
   creatorProfiles: typeof creatorProfiles;
+  creators: typeof creators;
   "lib/config": typeof lib_config;
   "lib/r2": typeof lib_r2;
   "lib/roles": typeof lib_roles;

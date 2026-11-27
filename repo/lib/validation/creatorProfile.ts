@@ -1,12 +1,11 @@
 import { z } from "zod";
 
 import {
-  CATEGORIES,
   MAX_SOCIAL_ACCOUNTS,
-  PLATFORMS,
   PRICE_MAX_TAKA,
   PRICE_MIN_TAKA,
-} from "@/convex/lib/validation";
+} from "@/convex/lib/config";
+import { CATEGORIES, PLATFORMS } from "@/convex/lib/validation";
 
 const wholeNumber = (label: string) =>
   z

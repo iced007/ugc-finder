@@ -10,6 +10,7 @@ Decisions behind this phase:
 - **Samples only.** Order videos and order-status checks arrive in Phase 5. Phase 2 access rules are the "Samples" table in tech-stack.md, section 6.
 - **No transcoding.** Samples stream as uploaded, with no download button. Lower-quality public copies are Phase 7.
 - **Approval comes before public pages,** so every public query filters on `approvedByAdmin` from the start. Task 2.5 replaces the old Phase 6 "Creator approval" item.
+- **Creator approval and sample approval are separate.** Approving a creator also approves the samples they have at that moment; every later upload needs its own approval (2.8 and 2.9). Samples uploaded before 2.8 count as approved.
 - **Public pages are open to signed-out visitors.** `/creators` is not in `proxy.ts`'s protected paths (only `/creator` and its sub-paths are), so no proxy change is needed.
 
 Do the tasks in order, one per session.
@@ -193,3 +194,57 @@ Do the tasks in order, one per session.
 
 **STATUS line:** `2.7 Creator directory — /creators with URL-based filters, search and load more`
 **Out of scope:** sorting options, saved searches, sample thumbnails on cards, a denormalized search table.
+
+## 2.8 Sample review backend
+
+**Goal:** new samples from approved creators stay hidden from the public until an admin approves them, and an admin can approve or decline each sample.
+
+**Reads:** tech-stack.md sections 5 (sampleVideos) and 6 (Samples), convex/samples.ts, convex/sampleActions.ts, convex/admin.ts, convex/creators.ts, convex/lib/roles.ts, convex/creatorProfiles.test.ts (as a model for tests)
+
+**Build:**
+- `convex/schema.ts`: `sampleVideos.reviewStatus` as optional `pending`, `approved` or `declined`. A missing value means approved, so existing samples stay public. Add an index `by_review`.
+- `convex/samples.ts`: `insertPending` sets `reviewStatus: "pending"`. Export `isPublicSample(sample)`: `status === "ready"` and `(reviewStatus ?? "approved") === "approved"`. `listMine` returns `reviewStatus`, with a missing value shown as `approved`.
+- `convex/sampleActions.ts` `getPlaybackUrl`: anyone other than the owner or an admin needs `isPublicSample` and an approved creator. This replaces the "ready + approved creator" rule from 2.3.
+- `convex/creators.ts` `getPublic`: filter samples with `isPublicSample`. This replaces the `ready` filter from 2.6.
+- `convex/admin.ts`: `listCreators` returns `samples: { _id, reviewStatus }[]` (ready only) in place of `sampleIds`. New query `listSamplesForReview` (null unless admin) returns ready, `pending` samples of approved creators with the creator's `displayName` and profile ID. New mutation `setSampleReview({ sampleId, decision })`, where the decision is `approved` or `declined`, guarded by `requireRole(ctx, ["admin"])`. `setCreatorApproval` with `approved: true` also sets that creator's `pending` samples to `approved`. Unapproving leaves samples as they are.
+
+**Files:** convex/schema.ts, convex/samples.ts, convex/sampleActions.ts, convex/creators.ts, convex/admin.ts, convex/samples.test.ts, docs/v2/tech-stack.md (section 5 row, section 6 Samples table), docs/v2/STATUS.md
+**Data:** `sampleVideos.reviewStatus` (new, optional), new index `by_review`
+**Config:** none
+**Allowed new dependencies:** none
+**Manual steps:** keep `npx convex dev` running to push the schema
+**Stop and ask if:** declining seems to need deleting the R2 object, or the schema push fails on existing data
+
+**Acceptance (convex-test in convex/samples.test.ts):**
+- An approved creator's new ready sample is missing from `getPublic`. After `setSampleReview` approves it, the sample appears; after a decline, it stays hidden.
+- Approving a new creator makes their pending samples public. A sample with no `reviewStatus` stays public.
+- A creator or brand calling `setSampleReview` is rejected. `listSamplesForReview` returns null for non-admins.
+- `npm test`, `npm run typecheck` and `npm run lint` pass.
+
+**STATUS line:** `2.8 Sample review backend — reviewStatus on samples, admin approve/decline, public queries show approved samples only`
+**Out of scope:** decline reasons, notifications, deleting declined files, any UI (2.9).
+
+## 2.9 Sample review UI
+
+**Goal:** the admin reviews new samples on the admin page, and the creator sees each sample's review state.
+
+**Reads:** spec 2.8, convex/admin.ts, components/admin/CreatorReviewList.tsx, components/creator/SampleList.tsx, components/video/SignedVideo.tsx
+
+**Build:**
+- `components/admin/CreatorReviewList.tsx`: add a third tab, "New samples", fed by `listSamplesForReview`. Each card shows the video with `SignedVideo`, the creator's name linking to `/creators/<profileId>`, and Approve and Decline buttons with a pending state. Empty state: "No samples waiting for review".
+- Same file: "Waiting" creator cards note "Approving this creator also approves these samples". "Approved" creator cards show a review badge on each sample and an Approve or Decline button to change it.
+- `components/creator/SampleList.tsx`: a badge on each sample ("Waiting for review", "Approved", "Declined") and a one-line hint: "Only approved samples are shown to brands."
+
+**Files:** components/admin/CreatorReviewList.tsx, components/creator/SampleList.tsx, docs/v2/STATUS.md
+**Data:** none (uses 2.8)
+**Config:** none
+**Allowed new dependencies:** none
+**Manual steps:** none
+
+**Acceptance:**
+- When an approved creator uploads a sample, it shows "Waiting for review" on the creator's list and appears under "New samples" for the admin.
+- Approve removes it from the tab, it plays on the public page, and the creator sees "Approved". Decline: the creator sees "Declined" and the public page doesn't show it.
+- Usable at 360px with no horizontal scroll; tap targets at least 44px. `npm run typecheck` and `npm run lint` pass.
+
+**STATUS line:** `2.9 Sample review UI — admin "New samples" tab with approve/decline, review badges on the creator's sample list`
+**Out of scope:** bulk actions, decline reasons, notifications, an admin nav (Phase 6).
