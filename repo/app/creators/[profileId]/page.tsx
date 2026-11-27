@@ -11,6 +11,10 @@ import { APP_NAME } from "@/lib/config";
 
 type Props = { params: Promise<{ profileId: string }> };
 
+// The profile is read fresh on every request (never cached, so an unapproved one
+// is never shown), which makes this a blocking route.
+export const instant = false;
+
 // Cached per request, so the page and its metadata share one query.
 const getCreator = cache(async (profileId: string) => {
   // The Convex client uses Math.random(), so this must wait for a request.

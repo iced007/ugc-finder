@@ -36,10 +36,10 @@ Agents: if your task touches a file named here, read that issue first. Do not fi
 - **Code:** the root `AGENTS.md` (the file agents load) still says Next.js 14+ and points to `docs/*.md`. The fixed version is `docs/v2/AGENTS.md`; agent tooling blocked writing the root file directly.
 - **Do:** Copy `docs/v2/AGENTS.md` over the root `AGENTS.md` before the next agent session, then delete `docs/v2/AGENTS.md` so there is only one copy.
 
-### K.17 Public creator page reports a blocking-metadata error in dev (from 2.6)
+### K.17 Resolved in B.12: public creator page blocking-route error in dev (from 2.6)
 
-- **Code:** `app/creators/[profileId]/page.tsx` renders, but Next.js dev reports "uncached data in `generateMetadata()`", pointing at the `await connection()` in `getCreator`. Without that call, the Convex fetch raised a `Math.random()` prerender error. Adding a Suspense boundary and a dynamic marker component did not clear the metadata error. A production build was not run.
-- **Do:** Needs a task. Find how `generateMetadata` can read the creator under `cacheComponents` without caching a profile that may since have been unapproved. May be related to K.7.
+- **Code:** `app/creators/[profileId]/page.tsx` sets `export const instant = false`, so the page may block on its per-request query. Before this, dev reported uncached data at the `await connection()` in `getCreator`. `getPublic` results are not cached.
+- **Do:** Nothing.
 
 ### K.18 Landing header does not work well on other pages (from 2.6)
 
